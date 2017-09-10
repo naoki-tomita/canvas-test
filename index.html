@@ -2,7 +2,7 @@
 <div data-bind="foreach: koImages">
   <div><input type="radio" name="selectedImage" data-bind="checked: $parent.koSelected, value: name, event: { change: $parent.koSelect }"><span data-bind="text: name"></span></div>
 </div>
-<script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.4.2.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/knockout/knockout-3.4.2.js"></script>
 <script>
   var viewmodels = {
     koImages: ko.observableArray([]),
