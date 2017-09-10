@@ -1,0 +1,117 @@
+<canvas id="canvas" width="256" height="256"></canvas>
+<div data-bind="foreach: koImages">
+  <div><input type="radio" name="selectedImage" data-bind="checked: $parent.koSelected, value: name, event: { change: $parent.koSelect }"><span data-bind="text: name"></span></div>
+</div>
+<script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.4.2.js"></script>
+<script>
+  var viewmodels = {
+    koImages: ko.observableArray([]),
+    koSelected: ko.observable(),
+    koSelect: function(selected) {
+      imageCanvas.selectImg(selected.index);
+    },
+    addImage: function(name) {
+      this.koImages.push({
+        name: name,
+        index: this.koImages().length
+      });
+    }
+  };
+
+  (function(root) {
+    root.addEventListener("load", function() {
+      imageCanvas.init(document.getElementById("canvas"));
+      var fb = new Image();
+      var fence = new Image();
+      fb.src = "fb.png";
+      fence.src = "fence.png";
+      imageCanvas.addImage(fb);
+      imageCanvas.addImage(fence);
+      ko.applyBindings(viewmodels);
+      viewmodels.addImage("fb");
+      viewmodels.addImage("fence");
+    });
+  })(window);
+
+  var imageCanvas = {
+    init: function(el) {
+      this.images = [];
+      this.canvas = el;
+      this._bindClick();
+    },
+    addImage: function(img) {
+      var that = this;
+      this.images.push(new ImageComp(img));
+      img.addEventListener("load", function() {
+        that.update();
+      });
+    },
+    selectImg: function(index) {
+      this.selectedImage = this.images[index];
+    },
+    _bindClick: function() {
+      var that = this;
+      this.canvas.addEventListener("mousedown", function(e) {
+        var rect = e.target.getBoundingClientRect();
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+        that.startMove(x, y);
+      });
+      this.canvas.addEventListener("mouseup", function() {
+        that.endMove();
+      });
+      this.canvas.addEventListener("mousemove", function(e) {
+        var rect = e.target.getBoundingClientRect();
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+        that.onMove(x, y);
+      });
+    },
+    startMove: function(x, y) {
+      this.isMove = true;
+      this.lastX = x;
+      this.lastY = y;
+    },
+    endMove: function() {
+      this.isMove = false;
+      this.lastX = 0;
+      this.lastY = 0;
+    },
+    onMove: function(x, y) {
+      var moveX = 0, moveY = 0;
+      if (!this.isMove || !this.selectedImage) return;
+      moveX = x - this.lastX;
+      moveY = y - this.lastY;
+      this.lastX = x;
+      this.lastY = y;
+      this.selectedImage.move(moveX, moveY);
+      this.update();
+    },
+    update: function() {
+      this.clear();
+      this.draw();
+    },
+    draw: function() {
+      this.images.forEach(function(element) {
+        this.drawImage(element);
+      }, this);
+    },
+    clear: function() {
+      this.canvas.getContext("2d").clearRect(0, 0, 256, 256);;
+    },
+    drawImage: function(img) {
+      this.canvas.getContext("2d").drawImage(img.img, img.x, img.y, 256, 256);
+    }
+  };
+
+  var ImageComp = function(img) {
+    this.img = img;
+    this.x = 0;
+    this.y = 0;
+
+    this.move = function(x, y) {
+      this.x += x;
+      this.y += y;
+    }
+  };
+</script>
